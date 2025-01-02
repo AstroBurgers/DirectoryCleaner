@@ -77,19 +77,6 @@ internal class Cleaner(
     {
         var size = Convert.ToInt32(fileSize.Substring(0, fileSize.Length - 2));
         var unit = fileSize.Substring(fileSize.Length - 2, 2);
-        switch (unit)
-        {
-            case "KB":
-                break;
-            case "MB":
-                break;
-            case "GB":
-                break;
-            case "TB":
-                break;
-            default:
-                break;
-        }
         
         return (size, unit);
     }
