@@ -1,4 +1,6 @@
-﻿namespace DirectoryCleaner;
+﻿using Microsoft.VisualBasic.FileIO;
+
+namespace DirectoryCleaner;
 
 internal enum CleanType
 {
@@ -12,16 +14,17 @@ internal class Cleaner(
     CleanType cleanType,
     List<string> excludedFiles,
     List<string> excludedFolders,
+    bool deleteItems,
     string maxFileSize = "",
     string minFileSize = "",
     int minFolderDepth = 0,
     int maxFolderDepth = 0)
 {
-    public Cleaner(string dirString, CleanType cleanType, List<string> excludedFolders, int minFolderDepth = 0, int maxFolderDepth = 0) : this(dirString, cleanType, null, excludedFolders, null, null, minFolderDepth, maxFolderDepth)
+    public Cleaner(string dirString, CleanType cleanType, List<string> excludedFolders, bool deleteItems, int minFolderDepth = 0, int maxFolderDepth = 0) : this(dirString, cleanType, null, excludedFolders, deleteItems, null, null, minFolderDepth, maxFolderDepth)
     {
     }
 
-    public Cleaner(string dirString, CleanType cleanType, List<string> excludedFiles, string maxFileSize = "", string minFileSize = "") : this(dirString, cleanType, excludedFiles, null, maxFileSize, minFileSize, 0, 0)
+    public Cleaner(string dirString, CleanType cleanType, List<string> excludedFiles, bool deleteItems, string maxFileSize = "", string minFileSize = "") : this(dirString, cleanType, excludedFiles, null, deleteItems, maxFileSize, minFileSize, 0, 0)
     {
     }
     
@@ -35,6 +38,7 @@ internal class Cleaner(
     internal string MinFileSize { get; set; } = minFileSize;
     internal int MinFolderDepth { get; set; } = minFolderDepth;
     internal int MaxFolderDepth { get; set; } = maxFolderDepth;
+    internal bool DeleteItems { get; set; } = deleteItems;
 
     internal void CleanDir()
     {
@@ -55,6 +59,9 @@ internal class Cleaner(
                 CleanFiles();
                 CleanFolders();
                 break;
+            default:
+                Console.WriteLine("Invalid clean type.");
+                break;
         }
     }
 
@@ -74,13 +81,38 @@ internal class Cleaner(
                 Console.WriteLine($"File {fileInfo.Name} is not within the size range.");
                 continue;
             }
+            
+            if (DeleteItems)
+            {
+                FileSystem.DeleteFile(file, UIOption.AllDialogs, RecycleOption.SendToRecycleBin);
+            }
 
+            CleanedFiles.Add(file);
         }
     }
 
     internal void CleanFolders()
     {
-        
+        var folders = Directory.GetDirectories(DirString);
+        foreach (var folder in folders)
+        {
+            var folderInfo = new DirectoryInfo(folder);
+            if (ExcludedFolders.Contains(folderInfo.Name)) {
+                Console.WriteLine($"Folder {folderInfo.Name} is excluded from cleaning.");
+                continue;
+            }
+            if (folderInfo.GetDirectories().Length < MinFolderDepth || folderInfo.GetDirectories().Length > MaxFolderDepth) {
+                Console.WriteLine($"Folder {folderInfo.Name} is not within the depth range.");
+                continue;
+            }
+            
+            if (DeleteItems)
+            {
+                FileSystem.DeleteDirectory(folder, UIOption.AllDialogs, RecycleOption.SendToRecycleBin);
+            }
+
+            CleanedFolders.Add(folder);
+        }
     }
 
     internal static long ConvertSize(long sizeInBytes, string unit)
