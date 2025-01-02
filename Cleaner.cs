@@ -63,7 +63,18 @@ internal class Cleaner(
         var files = Directory.GetFiles(DirString);
         foreach (var file in files)
         {
-            
+            var (minSize, minUnit) = ConvertFileSize(MinFileSize);
+            var (maxSize, maxUnit) = ConvertFileSize(MaxFileSize);
+            var fileInfo = new FileInfo(file);
+            if (ExcludedFiles.Contains(fileInfo.Name)) {
+                Console.WriteLine($"File {fileInfo.Name} is excluded from cleaning.");
+                continue;
+            }
+            if (ConvertSize(fileInfo.Length, minUnit) < minSize || ConvertSize(fileInfo.Length, maxUnit) > maxSize) {
+                Console.WriteLine($"File {fileInfo.Name} is not within the size range.");
+                continue;
+            }
+
         }
     }
 
@@ -71,13 +82,23 @@ internal class Cleaner(
     {
         
     }
-    
+
+    internal static long ConvertSize(long sizeInBytes, string unit)
+    {
+        var finalNum = unit switch
+        {
+            "KB" => sizeInBytes / 1024,
+            "MB" => sizeInBytes / 1024 / 1024,
+            "GB" => sizeInBytes / 1024 / 1024 / 1024,
+            _ => sizeInBytes
+        };
+        return finalNum;
+    }
     
     internal static (int, string) ConvertFileSize(string fileSize)
     {
         var size = Convert.ToInt32(fileSize.Substring(0, fileSize.Length - 2));
         var unit = fileSize.Substring(fileSize.Length - 2, 2);
-        
         return (size, unit);
     }
 }
