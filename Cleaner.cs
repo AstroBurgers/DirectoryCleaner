@@ -38,6 +38,59 @@ internal class Cleaner(
 
     internal void CleanDir()
     {
+        if (!Path.Exists(DirString)) {
+            Console.WriteLine("Invalid path format // Path does not exist");
+            return;
+        }
+
+        switch (CleanType)
+        {
+            case CleanType.EFiles:
+                CleanFiles();
+                break;
+            case CleanType.EFolders:
+                CleanFolders();
+                break;
+            case CleanType.EAll:
+                CleanFiles();
+                CleanFolders();
+                break;
+        }
+    }
+
+    internal void CleanFiles()
+    {
+        var files = Directory.GetFiles(DirString);
+        foreach (var file in files)
+        {
+            
+        }
+    }
+
+    internal void CleanFolders()
+    {
         
+    }
+    
+    
+    internal static (int, string) ConvertFileSize(string fileSize)
+    {
+        var size = Convert.ToInt32(fileSize.Substring(0, fileSize.Length - 2));
+        var unit = fileSize.Substring(fileSize.Length - 2, 2);
+        switch (unit)
+        {
+            case "KB":
+                break;
+            case "MB":
+                break;
+            case "GB":
+                break;
+            case "TB":
+                break;
+            default:
+                break;
+        }
+        
+        return (size, unit);
     }
 }
