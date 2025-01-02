@@ -6,7 +6,8 @@ internal enum CleanType
 {
     EFolders,
     EFiles,
-    EAll
+    EAll,
+    NONE
 }
 
 internal class Cleaner(
